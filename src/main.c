@@ -23,6 +23,7 @@
 int lsh_cd(char **args);
 int lsh_help(char **args);
 int lsh_exit(char **args);
+int lsh_factorial(char **args);
 
 /*
   List of builtin commands, followed by their corresponding functions.
@@ -30,13 +31,15 @@ int lsh_exit(char **args);
 char *builtin_str[] = {
   "cd",
   "help",
-  "exit"
+  "exit",
+  "factorial"
 };
 
 int (*builtin_func[]) (char **) = {
   &lsh_cd,
   &lsh_help,
-  &lsh_exit
+  &lsh_exit,
+  &lsh_factorial
 };
 
 int lsh_num_builtins() {
@@ -93,6 +96,25 @@ int lsh_exit(char **args)
 {
   return 0;
 }
+
+/**
+   @brief Bultin command: factorial.
+   @param args List of args.  args[0] is "factorial".  args[1] is the number.
+   @return Always returns 1, to continue executing.
+ */
+int lsh_factorial(char **args)
+{
+  if (args[1] == NULL) {
+    fprintf(stderr, "lsh: expected argument to \"factorial\"\n");
+  } else {
+    int ans=1;
+    for(int i=1;i<=atoi(args[1]);i++)
+    {ans=ans*i;}
+    printf("%d\n",ans);
+  }
+  return(1);
+}
+
 
 /**
   @brief Launch a program and wait for it to terminate.
@@ -240,13 +262,17 @@ void lsh_loop(void)
   int status;
 
   do {
-    printf("> ");
-    line = lsh_read_line();
-    args = lsh_split_line(line);
-    status = lsh_execute(args);
-
-    free(line);
-    free(args);
+    char cwd[256];
+    if(getcwd(cwd,sizeof(cwd))==NULL)
+      perror("getcwd() error");
+    else{
+      printf("%s> ",cwd);
+      line = lsh_read_line();
+      args = lsh_split_line(line);
+      status = lsh_execute(args);
+      free(line);
+      free(args);
+    }
   } while (status);
 }
 
